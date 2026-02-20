@@ -160,6 +160,37 @@
   gap: 4px;
 }
 
+.room-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.delete-room-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  opacity: 0.6;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a0a0b0;
+
+  &:hover {
+    opacity: 1;
+    background: rgba(245, 108, 108, 0.15);
+    color: #f56c6c;
+  }
+}
+
+.room-item:hover .delete-room-btn {
+  opacity: 1;
+}
+
 .room-participants-preview {
   display: flex;
   align-items: center;
