@@ -4,31 +4,33 @@ import type { ChatRoom, Message, Participant } from '@/types/chat'
 import { BOT_RESPONSES } from '@/data/bot'
 import ChatSidebar from '@/components/ChatSidebar.vue'
 import ChatMain from '@/components/ChatMain.vue'
+import { useLocalStorage } from '@/composables/useLocalStorage'
+import { useIdGenerator } from '@/composables/useIdGenerator'
 import './ChatRoom.scss'
 
 const STORAGE_KEY = 'chatrooms-state'
 const ACTIVE_ROOM_KEY = 'chatrooms-active'
 
-const generateId = () => {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID()
-  }
-  return 'id-' + Math.random().toString(36).substr(2, 9)
+const { generateId } = useIdGenerator()
+
+// Helper to restore Date objects from serialized strings
+const restoreChatRooms = (data: any[]): ChatRoom[] => {
+  return data.map(room => ({
+    ...room,
+    messages: room.messages.map((msg: any) => ({
+      ...msg,
+      timestamp: new Date(msg.timestamp)
+    }))
+  }))
 }
 
+// Custom storage handling for complex data (Date objects)
 const loadFromStorage = (): ChatRoom[] => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
-      const parsed = JSON.parse(stored) as ChatRoom[]
-      // Restore Date objects from serialized strings
-      return parsed.map(room => ({
-        ...room,
-        messages: room.messages.map(msg => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp)
-        }))
-      }))
+      const parsed = JSON.parse(stored) as any[]
+      return restoreChatRooms(parsed)
     }
   } catch (e) {
     console.error('Failed to load chat state from storage:', e)
@@ -44,27 +46,6 @@ const saveToStorage = (rooms: ChatRoom[]) => {
   }
 }
 
-const loadActiveRoomId = (): string | null => {
-  try {
-    return localStorage.getItem(ACTIVE_ROOM_KEY)
-  } catch (e) {
-    console.error('Failed to load active room from storage:', e)
-  }
-  return null
-}
-
-const saveActiveRoomId = (roomId: string | null) => {
-  try {
-    if (roomId) {
-      localStorage.setItem(ACTIVE_ROOM_KEY, roomId)
-    } else {
-      localStorage.removeItem(ACTIVE_ROOM_KEY)
-    }
-  } catch (e) {
-    console.error('Failed to save active room to storage:', e)
-  }
-}
-
 const storedRooms = loadFromStorage()
 const rooms = ref<ChatRoom[]>(storedRooms.length > 0 ? storedRooms : [
   {
@@ -75,12 +56,13 @@ const rooms = ref<ChatRoom[]>(storedRooms.length > 0 ? storedRooms : [
   },
 ])
 
-const storedActiveRoomId = loadActiveRoomId()
-const activeRoomId = ref<string | null>(
-  storedActiveRoomId && rooms.value.some(r => r.id === storedActiveRoomId)
-    ? storedActiveRoomId
-    : rooms.value[0]?.id ?? null
-)
+// Persist active room ID
+const activeRoomId = useLocalStorage<string | null>(ACTIVE_ROOM_KEY, null)
+
+// Validate active room ID on mount
+if (!activeRoomId.value || !rooms.value.some(r => r.id === activeRoomId.value)) {
+  activeRoomId.value = rooms.value[0]?.id ?? null
+}
 
 const activeRoom = computed(() => {
   return rooms.value.find(r => r.id === activeRoomId.value) || null
@@ -90,11 +72,6 @@ const activeRoom = computed(() => {
 watch(rooms, (newRooms) => {
   saveToStorage(newRooms)
 }, { deep: true })
-
-// Persist active room selection
-watch(activeRoomId, (newId) => {
-  saveActiveRoomId(newId)
-})
 
 const selectRoom = (roomId: string) => {
   activeRoomId.value = roomId

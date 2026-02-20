@@ -38,7 +38,7 @@ watch(() => props.modelValue, (newVal) => {
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="modelValue" class="modal-overlay" @click="handleCancel" role="dialog" aria-modal="true" :aria-labelledby="`dialog-title-${title}`">
-        <div class="modal-content" :class="type || 'info'" @click.stop>
+        <div class="modal-content confirm-modal" :class="type || 'info'" @click.stop>
           <div class="modal-header">
             <div class="icon-wrapper" :class="type || 'info'">
               <svg v-if="type === 'danger'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
