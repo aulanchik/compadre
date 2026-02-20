@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import type { ChatRoom } from '@/types/chat'
 import InviteParticipant from '@/components/InviteParticipant.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import './ChatSidebar.scss'
 
 const props = defineProps<{
@@ -13,10 +14,13 @@ const emit = defineEmits<{
   selectRoom: [roomId: string]
   createRoom: [name?: string]
   inviteParticipant: [participant: any]
+  deleteRoom: [roomId: string]
 }>()
 
 const isCollapsed = ref(false)
 const showInviteModal = ref(false)
+const showDeleteConfirm = ref(false)
+const roomToDelete = ref<string | null>(null)
 const newChatName = ref('')
 const showNewChatInput = ref(false)
 
@@ -41,6 +45,19 @@ const handleInviteParticipant = (participant: any) => {
 
 const openInviteModal = () => {
   showInviteModal.value = true
+}
+
+const handleDeleteRoom = (e: Event, roomId: string) => {
+  e.stopPropagation()
+  roomToDelete.value = roomId
+  showDeleteConfirm.value = true
+}
+
+const confirmDelete = () => {
+  if (roomToDelete.value) {
+    emit('deleteRoom', roomToDelete.value)
+    roomToDelete.value = null
+  }
 }
 
 const activeRoom = ref(() => {
@@ -85,7 +102,21 @@ const activeRoom = ref(() => {
       >
         <span class="room-icon">💬</span>
         <div class="room-info" v-if="!isCollapsed">
-          <span class="room-name">{{ room.name }}</span>
+          <div class="room-header">
+            <span class="room-name">{{ room.name }}</span>
+            <button
+              class="delete-room-btn"
+              @click="(e) => handleDeleteRoom(e, room.id)"
+              title="Delete chat"
+              aria-label="Delete chat"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
           <div class="room-participants-preview" v-if="room.participants?.length">
             <span
               v-for="p in room.participants.slice(0, 3)"
@@ -115,6 +146,16 @@ const activeRoom = ref(() => {
       v-model="showInviteModal"
       :existing-participants="activeRoom?.() ?.participants || []"
       @add-participant="handleInviteParticipant"
+    />
+
+    <ConfirmDialog
+      v-model="showDeleteConfirm"
+      title="Delete Chat Room"
+      message="Are you sure you want to delete this chat room? This action cannot be undone."
+      type="danger"
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      @confirm="confirmDelete"
     />
   </aside>
 </template>

@@ -123,6 +123,30 @@ const updateRoomName = (name: string) => {
   room.name = name
 }
 
+const deleteRoom = (roomId: string) => {
+  const roomIndex = rooms.value.findIndex(r => r.id === roomId)
+  if (roomIndex === -1) return
+
+  // Handle edge case: if deleting the active room
+  if (activeRoomId.value === roomId) {
+    // If there are other rooms, select the first available one
+    if (rooms.value.length > 1) {
+      // Prefer the next room, or the previous one if deleting the last room
+      const newActiveIndex = roomIndex < rooms.value.length - 1 ? roomIndex + 1 : roomIndex - 1
+      const newRoom = rooms.value[newActiveIndex]
+      if (newRoom) {
+        activeRoomId.value = newRoom.id
+      }
+    } else {
+      // Last room is being deleted, clear active room
+      activeRoomId.value = null
+    }
+  }
+
+  // Remove the room
+  rooms.value.splice(roomIndex, 1)
+}
+
 const getRandomResponse = () => {
   const randomIndex = Math.floor(Math.random() * BOT_RESPONSES.length)
   return BOT_RESPONSES[randomIndex] ?? "That's interesting!"
@@ -185,6 +209,7 @@ const sendMessage = (text: string) => {
       @select-room="selectRoom"
       @create-room="createRoom"
       @invite-participant="inviteParticipant"
+      @delete-room="deleteRoom"
     />
     <ChatMain
       :room="activeRoom"
