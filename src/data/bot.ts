@@ -1,0 +1,17 @@
+export const BOT_RESPONSES = [
+    "That's interesting! Tell me more.",
+    "I see what you mean.",
+    "Hmm, let me think about that...",
+    "Absolutely!",
+    "I'm not sure I follow. Could you elaborate?",
+    "That makes sense.",
+    "Really? That's fascinating!",
+    "I agree with you.",
+    "Interesting perspective!",
+    "Thanks for sharing that.",
+    "I never thought about it that way.",
+    "You're absolutely right!",
+    "That's a great point.",
+    "I'm listening, go on.",
+    "Wow, that's surprising!",
+]
