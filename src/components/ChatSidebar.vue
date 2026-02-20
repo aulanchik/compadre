@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import type { ChatRoom } from '@/types/chat'
 import InviteParticipant from '@/components/InviteParticipant.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
@@ -59,6 +59,12 @@ const confirmDelete = () => {
     roomToDelete.value = null
   }
 }
+
+const roomNameToDelete = computed(() => {
+  if (!roomToDelete.value) return ''
+  const room = props.rooms.find(r => r.id === roomToDelete.value)
+  return room?.name || ''
+})
 
 const activeRoom = ref(() => {
   return props.rooms.find(r => r.id === props.activeRoomId) || null
@@ -151,7 +157,7 @@ const activeRoom = ref(() => {
     <ConfirmDialog
       v-model="showDeleteConfirm"
       title="Delete Chat Room"
-      message="Are you sure you want to delete this chat room? This action cannot be undone."
+      :message="`Are you sure you want to delete '${roomNameToDelete}'? This action cannot be undone.`"
       type="danger"
       confirm-text="Delete"
       cancel-text="Cancel"

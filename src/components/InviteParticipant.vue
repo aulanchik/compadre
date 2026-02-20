@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import type { Participant } from '@/types/chat'
+import { useIdGenerator } from '@/composables/useIdGenerator'
 import './InviteParticipant.scss'
 
 const props = defineProps<{
@@ -13,12 +14,7 @@ const emit = defineEmits<{
   addParticipant: [participant: Participant]
 }>()
 
-const generateId = () => {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID()
-  }
-  return 'id-' + Math.random().toString(36).substr(2, 9)
-}
+const { generateId } = useIdGenerator()
 
 const AVATARS = ['👨', '👩', '🧑', '👴', '👵', '🧔', '👱', '👮', '👷', '🕵️', '🧙', '🧚', '🧛', '🧜'] as const
 
@@ -69,11 +65,16 @@ watch(() => props.modelValue, (newVal) => {
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="modelValue" class="modal-overlay" @click="closeModal">
-        <div class="modal-content" @click.stop>
+      <div v-if="modelValue" class="modal-overlay" @click="closeModal" role="dialog" aria-modal="true" aria-labelledby="invite-modal-title">
+        <div class="modal-content invite-modal" @click.stop>
           <div class="modal-header">
-            <h3>Invite Participant</h3>
-            <button class="close-btn" @click="closeModal">×</button>
+            <h3 id="invite-modal-title">Invite Participant</h3>
+            <button class="close-btn" @click="closeModal" aria-label="Close modal">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
           </div>
 
           <div class="modal-body">
