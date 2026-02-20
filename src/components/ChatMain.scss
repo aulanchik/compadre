@@ -28,12 +28,97 @@
   padding: 16px 24px;
   border-bottom: 1px solid #2d2d44;
   background: #1a1a2e;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
-  h3 {
+  .header-left {
+    display: flex;
+    align-items: center;
+  }
+
+  .name-edit {
+    .name-input {
+      padding: 8px 12px;
+      background: #2d2d44;
+      border: 1px solid #4f46e5;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      outline: none;
+
+      &::placeholder {
+        color: #888;
+      }
+    }
+  }
+
+  .room-title {
     margin: 0;
     font-size: 18px;
     font-weight: 600;
     color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .edit-icon {
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    &:hover .edit-icon {
+      opacity: 1;
+    }
+  }
+
+  .participants-list {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .participant {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .participant-avatar {
+      font-size: 18px;
+    }
+
+    .participant-name {
+      font-size: 13px;
+      color: #ccc;
+      white-space: nowrap;
+    }
+
+    .auto-respond-badge {
+      font-size: 10px;
+      color: #409eff;
+      background: rgba(64, 158, 255, 0.15);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
   }
 }
 

@@ -9,10 +9,13 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   sendMessage: [text: string]
+  updateRoomName: [name: string]
 }>()
 
 const messageInput = ref('')
 const messagesContainer = ref<HTMLElement | null>(null)
+const isEditingName = ref(false)
+const editedName = ref('')
 
 const scrollToBottom = async () => {
   await nextTick()
@@ -43,6 +46,34 @@ const handleKeyPress = (e: KeyboardEvent) => {
 const formatTime = (date: Date) => {
   return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
+
+const startEditingName = () => {
+  if (props.room) {
+    editedName.value = props.room.name
+    isEditingName.value = true
+  }
+}
+
+const saveRoomName = () => {
+  if (editedName.value.trim() && props.room) {
+    emit('updateRoomName', editedName.value.trim())
+    isEditingName.value = false
+  }
+}
+
+const cancelEditingName = () => {
+  isEditingName.value = false
+  editedName.value = ''
+}
+
+const handleNameKeyPress = (e: KeyboardEvent) => {
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    saveRoomName()
+  } else if (e.key === 'Escape') {
+    cancelEditingName()
+  }
+}
 </script>
 
 <template>
@@ -51,12 +82,41 @@ const formatTime = (date: Date) => {
       <span class="empty-icon">💬</span>
       <p>Select a chat room to start messaging</p>
     </div>
-    
+
     <template v-else>
       <div class="chat-header">
-        <h3>{{ room.name }}</h3>
+        <div class="header-left">
+          <div v-if="isEditingName" class="name-edit">
+            <input
+              v-model="editedName"
+              type="text"
+              @keyup="handleNameKeyPress"
+              @blur="saveRoomName"
+              class="name-input"
+              autofocus
+            />
+          </div>
+          <h3 v-else class="room-title" @click="startEditingName" title="Click to rename">
+            {{ room.name }}
+            <span class="edit-icon">✏️</span>
+          </h3>
+        </div>
+        <div class="participants-list" v-if="room.participants?.length">
+          <div
+            v-for="participant in room.participants"
+            :key="participant.id"
+            class="participant"
+            :title="`${participant.name}${participant.autoRespond ? ' (Auto-respond enabled)' : ''}`"
+          >
+            <span class="participant-avatar">{{ participant.avatar }}</span>
+            <span class="participant-name">{{ participant.name }}</span>
+            <span v-if="participant.autoRespond" class="auto-respond-badge" title="Auto-respond enabled">
+              [CHATBOT]
+            </span>
+          </div>
+        </div>
       </div>
-      
+
       <div class="messages-container" ref="messagesContainer">
         <div
           v-for="message in room.messages"
@@ -65,7 +125,7 @@ const formatTime = (date: Date) => {
           :class="message.sender"
         >
           <div class="message-avatar">
-            {{ message.sender === 'user' ? '👤' : '🤖' }}
+            {{ message.sender === 'user' ? '👤' : (message.participantAvatar || '🤖') }}
           </div>
           <div class="message-content">
             <div class="message-text">{{ message.text }}</div>
@@ -73,7 +133,7 @@ const formatTime = (date: Date) => {
           </div>
         </div>
       </div>
-      
+
       <div class="input-area">
         <textarea
           v-model="messageInput"
